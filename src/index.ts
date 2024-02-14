@@ -2,13 +2,13 @@ import { Plugin } from 'vite';
 import { exec } from 'child_process';
 import { Options } from './types';
 
-const oxlintPlugin = (options: Options = {path: '', deny: ['correctness'], allow: [], params: ''}): Plugin => {
+const oxlintPlugin = (options: Options = {}): Plugin => {
   const executeCommand = async () => {
-    const { deny = [], allow = [] } = options;
+    const { path= '', deny = ['correctness'], allow = [], params = '' } = options;
 
     const commandBase = `npx oxlint`;
-    const command = `${commandBase}${deny.map(d => ` -D ${d}`).join('')}${allow.map(a => ` -A ${a}`).join('')} ${options.params}`;
-    const cwd = `${process.cwd()}/${options.path}`;
+    const command = `${commandBase}${deny.map(d => ` -D ${d}`).join('')}${allow.map(a => ` -A ${a}`).join('')} ${params}`;
+    const cwd = `${process.cwd()}/${path}`;
 
     return new Promise<void>((resolve) => {
       exec(command, { cwd }, (error, stdout, stderr) => {

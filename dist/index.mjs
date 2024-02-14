@@ -1,10 +1,10 @@
 import { exec } from 'child_process';
-const oxlintPlugin = (options = { path: '', deny: ['correctness'], allow: [], params: '' }) => {
+const oxlintPlugin = (options = {}) => {
     const executeCommand = async () => {
-        const { deny = [], allow = [] } = options;
+        const { path = '', deny = ['correctness'], allow = [], params = '' } = options;
         const commandBase = `npx oxlint`;
-        const command = `${commandBase}${deny.map(d => ` -D ${d}`).join('')}${allow.map(a => ` -A ${a}`).join('')} ${options.params}`;
-        const cwd = `${process.cwd()}/${options.path}`;
+        const command = `${commandBase}${deny.map(d => ` -D ${d}`).join('')}${allow.map(a => ` -A ${a}`).join('')} ${params}`;
+        const cwd = `${process.cwd()}/${path}`;
         return new Promise((resolve) => {
             exec(command, { cwd }, (error, stdout, stderr) => {
                 if (stdout) {
