@@ -1,3 +1,4 @@
 import { Plugin } from 'vite';
-declare const oxlintPlugin: () => Plugin;
+import { Options } from './types';
+declare const oxlintPlugin: (options?: Options) => Plugin;
 export default oxlintPlugin;

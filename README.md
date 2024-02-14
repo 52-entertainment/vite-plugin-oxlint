@@ -21,6 +21,69 @@ export default {
 }
 ```
 
+## Advanced Usage
+
+### Change working directory
+
+You can change the directory where oxlinter will run.
+Default to the root of your directory.
+
+Examples: only lint files in yout `src` directory.
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+
+export default {
+  plugins: [
+    oxlintPlugin({
+      dir: 'src',
+    }),
+  ],
+}
+```
+
+### Allow / Deny rules
+
+You can allow or deny oxlinter rules or categories.
+To see the list of available rules and categories, run:
+`npx oxlint --rules`
+
+Default to deny: correctness.
+
+Example: deny (turn on) `correctness` and `perf` rules and allow (turn off) the `debugger` and `eqeqeq` rule.
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+
+export default {
+  plugins: [
+    oxlintPlugin({
+      deny: ['correctness', 'perf'],
+      allow: ['debugger', 'eqeqeq'],
+    }),
+  ],
+}
+```
+
+### Additional oxlint config:
+
+You can pass any additional oxlint config as a string.
+See [oxlint options](https://oxc-project.github.io/docs/guide/usage/linter.html#useful-options) for a list of available options.
+
+Example: add the `--deny-warnings` and `--quiet` option to the `vite-plugin-oxlint` config:
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+
+export default {
+  plugins: [
+    oxlintPlugin({
+      params: '--deny-warnings --quiet',
+    }),
+  ],
+}
+```
+
 ## License
 
 [MIT LICENSE](LICENSE)
