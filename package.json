@@ -1,0 +1,38 @@
+{
+  "name": "vite-plugin-oxlint",
+  "version": "1.0.0",
+  "description": "Oxlint plugin for vite.",
+  "author": "Arnaud Riu",
+  "license": "MIT",
+  "homepage": "https://github.com/52-entertainment/vite-plugin-oxlint",
+  "repository": "git+https://github.com/52-entertainment/vite-plugin-oxlint.git",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && node rename-to-mjs.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "oxlint",
+    "vite",
+    "vite-plugin"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3",
+    "vite": "^5.1.1"
+  },
+  "peerDependencies": {
+    "oxlint": "^0.2.8"
+  }
+}
