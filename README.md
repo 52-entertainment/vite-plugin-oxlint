@@ -26,7 +26,7 @@ export default {
 ### Change working directory
 
 You can change the directory where oxlinter will run.
-Default to the root of your directory.
+Default to the root of your project.
 
 Examples: only lint files in yout `src` directory.
 
@@ -36,7 +36,7 @@ import oxlintPlugin from 'vite-plugin-oxlint'
 export default {
   plugins: [
     oxlintPlugin({
-      dir: 'src',
+      path: 'src',
     }),
   ],
 }

@@ -4,7 +4,7 @@ import { Options } from './types';
 
 const oxlintPlugin = (options: Options = {}): Plugin => {
   const executeCommand = async () => {
-    const { path= '', deny = ['correctness'], allow = [], params = '' } = options;
+    const { path = '', deny = ['correctness'], allow = [], params = '' } = options;
 
     const commandBase = `npx oxlint`;
     const command = `${commandBase}${deny.map(d => ` -D ${d}`).join('')}${allow.map(a => ` -A ${a}`).join('')} ${params}`;
