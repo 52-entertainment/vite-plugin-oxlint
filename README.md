@@ -1,4 +1,4 @@
-# Vite Plugin Oxlint
+# ⚓️+⚡️Vite Plugin Oxlint
 
 This is a Vite plugin for integrating the [Oxlint](https://oxc-project.github.io) linter into your Vite project.
 This plugin is an adaptation of the [vite-plugin-biome](https://github.com/skrulling/vite-plugin-biome) for oxlint.
