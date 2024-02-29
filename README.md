@@ -84,6 +84,19 @@ export default {
 }
 ```
 
+## Integration with ESlint
+
+If your project still needs ESlint, you can use [vite-plugin-eslint](https://github.com/gxmari007/vite-plugin-eslint) and configure ESlint with [eslint-plugin-oxlint](https://github.com/oxc-project/eslint-plugin-oxlint) to turn off rules already supported in oxlint
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+import eslintPlugin from 'vite-plugin-eslint'
+
+export default {
+  plugins: [oxlintPlugin(), eslintPlugin()],
+}
+```
+
 ## License
 
 [MIT LICENSE](LICENSE)
