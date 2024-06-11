@@ -44,7 +44,7 @@ export default {
 
 ### Allow / Deny rules
 
-You can allow or deny oxlinter rules or categories.
+You can allow, deny or warn oxlinter rules or categories.
 To see the list of available rules and categories, run:
 `npx oxlint --rules`
 
@@ -60,6 +60,7 @@ export default {
     oxlintPlugin({
       deny: ['correctness', 'perf'],
       allow: ['debugger', 'eqeqeq'],
+      warn: [],
     }),
   ],
 }

@@ -1,11 +1,14 @@
 {
   "name": "vite-plugin-oxlint",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Oxlint plugin for vite.",
   "author": "Arnaud Riu",
   "license": "MIT",
   "homepage": "https://github.com/52-entertainment/vite-plugin-oxlint",
-  "repository": "git+https://github.com/52-entertainment/vite-plugin-oxlint.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/52-entertainment/vite-plugin-oxlint.git"
+  },
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
   "types": "dist/index.d.ts",

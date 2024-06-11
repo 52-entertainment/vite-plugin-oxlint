@@ -1,40 +1,58 @@
 import { Plugin } from 'vite';
 import { exec } from 'child_process';
+import nodePath from 'path';
 import { Options } from './types';
 
 const oxlintPlugin = (options: Options = {}): Plugin => {
+  let timeoutId: NodeJS.Timeout | null = null;
+  const debounceTime = 300;
+
   const executeCommand = async () => {
-    const { path = '', deny = ['correctness'], allow = [], params = '' } = options;
+    const { path = '', deny = ['correctness'], allow = [], warn = [], params = '' } = options;
 
     const commandBase = `npx oxlint`;
-    const command = `${commandBase}${deny.map(d => ` -D ${d}`).join('')}${allow.map(a => ` -A ${a}`).join('')} ${params}`;
-    const cwd = `${process.cwd()}/${path}`;
+    const command = `${commandBase}${deny.map(d => ` -D ${d}`).join('')}${allow.map(a => ` -A ${a}`).join('')}${warn.map(w => ` -W ${w}`).join('')} ${params}`;
+    const cwd = nodePath.join(process.cwd(), path);
 
-    return new Promise<void>((resolve) => {
+    return new Promise<void>((resolve, reject) => {
       exec(command, { cwd }, (error, stdout, stderr) => {
-        if (stdout) {
-          console.log(`oxlint Output:\n${stdout}`);
-        }
         if (stderr) {
           console.error(`oxlint Stderr: ${stderr}`);
         }
-        if (error) {
-          // Log the error message but do not reject the promise if there's useful output
-          console.error(`oxlint Error: ${error.message}`);
+        if (stdout) {
+          console.log(`oxlint Output:\n${stdout}`);
         }
-        resolve(); // Always resolve to continue the build process without failing
+        if (error) {
+          console.error(`oxlint Error: ${error.message}`);
+          reject(error);
+        } else {
+          resolve();
+        }
       });
     });
   };
 
+  const handleCommandExecution = async () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    timeoutId = setTimeout(async () => {
+      try {
+        await executeCommand();
+      } catch (error) {
+        console.error('Error executing command:', error);
+      }
+    }, debounceTime);
+  };
 
   return {
     name: 'vite-plugin-oxlint',
     async buildStart() {
-      await executeCommand();
+      await handleCommandExecution();
     },
     async handleHotUpdate() {
-      await executeCommand();
+      await handleCommandExecution();
     },
   };
 };
