@@ -28,11 +28,12 @@
     "vite-plugin"
   ],
   "devDependencies": {
-    "@types/node": "^20.10.5",
-    "typescript": "^5.3.3",
-    "vite": "^5.1.1"
+    "@types/node": "^20.14.2",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.13"
   },
   "peerDependencies": {
-    "oxlint": "^0.2.8"
-  }
+    "oxlint": "^0.4.3"
+  },
+  "packageManager": "pnpm@9.3.0"
 }
