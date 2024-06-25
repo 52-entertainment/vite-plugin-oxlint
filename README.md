@@ -23,6 +23,24 @@ export default {
 
 ## Advanced Usage
 
+### Oxlint Configuration File
+
+You can use a configuration file. See [Oxlint configuration file](https://oxc.rs/docs/guide/usage/linter/config.html).
+If you use a configuration file, other [Allow / Deny / Warn](#allow--deny-warn-rules) rules configurations will be ignored.
+Default to `oxlintrc.json`.
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+
+export default {
+  plugins: [
+    oxlintPlugin({
+      configFile: 'eslintrc.json',
+    }),
+  ],
+}
+```
+
 ### Change working directory
 
 You can change the directory where oxlinter will run.
@@ -42,7 +60,7 @@ export default {
 }
 ```
 
-### Allow / Deny rules
+### Allow / Deny / Warin rules
 
 You can allow, deny or warn oxlinter rules or categories.
 To see the list of available rules and categories, run:

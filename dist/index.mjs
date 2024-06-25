@@ -1,12 +1,20 @@
 import { exec } from 'child_process';
 import nodePath from 'path';
+import { existsSync } from 'fs';
 const oxlintPlugin = (options = {}) => {
     let timeoutId = null;
     const debounceTime = 300;
     const executeCommand = async () => {
-        const { path = '', deny = ['correctness'], allow = [], warn = [], params = '' } = options;
+        const { path = '', configFile = 'oxlintrc.json', deny = ['correctness'], allow = [], warn = [], params = '', } = options;
         const commandBase = `npx oxlint`;
-        const command = `${commandBase}${deny.map(d => ` -D ${d}`).join('')}${allow.map(a => ` -A ${a}`).join('')}${warn.map(w => ` -W ${w}`).join('')} ${params}`;
+        const configFilePath = nodePath.join(process.cwd(), configFile);
+        const configFileExists = existsSync(configFilePath);
+        const commandParams = configFileExists
+            ? ` -c ${configFilePath}`
+            : `${deny.map(d => ` -D ${d}`).join('')}${allow
+                .map(a => ` -A ${a}`)
+                .join('')}${warn.map(w => ` -W ${w}`).join('')}`;
+        const command = `${commandBase}${commandParams} ${params}`;
         const cwd = nodePath.join(process.cwd(), path);
         return new Promise((resolve, reject) => {
             exec(command, { cwd }, (error, stdout, stderr) => {
