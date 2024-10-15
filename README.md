@@ -46,7 +46,7 @@ export default {
 You can change the directory where oxlinter will run.
 Default to the root of your project.
 
-Examples: only lint files in yout `src` directory.
+Examples: only lint files in your `src` directory.
 
 ```javascript
 import oxlintPlugin from 'vite-plugin-oxlint'
@@ -55,6 +55,26 @@ export default {
   plugins: [
     oxlintPlugin({
       path: 'src',
+    }),
+  ],
+}
+```
+
+### Ignore patterns
+
+You can specify patterns of files to ignore. The supported syntax is the same as for .eslintignore and .gitignore files You should quote your patterns in order to avoid shell interpretation of glob patterns
+See [oxlint ignore](https://oxc.rs/docs/guide/usage/linter/cli.html#ignore-files)
+
+Example: lint files in your `src`, but not test.js files:
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+
+export default {
+  plugins: [
+    oxlintPlugin({
+      path: 'src',
+      ignorePattern: '"test.js"',
     }),
   ],
 }

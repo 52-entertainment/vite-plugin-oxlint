@@ -11,6 +11,7 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
   const executeCommand = async () => {
     const {
       path = '',
+      ignorePattern = '',
       configFile = 'oxlintrc.json',
       deny = ['correctness'],
       allow = [],
@@ -26,7 +27,9 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
       : `${deny.map(d => ` -D ${d}`).join('')}${allow
           .map(a => ` -A ${a}`)
           .join('')}${warn.map(w => ` -W ${w}`).join('')}`
-    const command = `${commandBase}${commandParams} ${params}`
+    const command = `${commandBase}${
+      ignorePattern ? ` --ignore-pattern=${ignorePattern} ` : ''
+    }${commandParams} ${params}`
     const cwd = nodePath.join(process.cwd(), path)
 
     return new Promise<void>((resolve, reject) => {
