@@ -5,15 +5,13 @@ const oxlintPlugin = (options = {}) => {
     let timeoutId = null;
     const debounceTime = 300;
     const executeCommand = async () => {
-        const { path = '', ignorePattern = '', configFile = 'oxlintrc.json', deny = ['correctness'], allow = [], warn = [], params = '', } = options;
+        const { path = '', ignorePattern = '', configFile = 'oxlintrc.json', deny = [], allow = [], warn = [], params = '', } = options;
         const commandBase = `npx oxlint`;
         const configFilePath = nodePath.join(process.cwd(), configFile);
         const configFileExists = existsSync(configFilePath);
-        const commandParams = configFileExists
-            ? ` -c ${configFilePath}`
-            : `${deny.map(d => ` -D ${d}`).join('')}${allow
-                .map(a => ` -A ${a}`)
-                .join('')}${warn.map(w => ` -W ${w}`).join('')}`;
+        const commandParams = `${deny.map(d => ` -D ${d}`).join('')}${allow
+            .map(a => ` -A ${a}`)
+            .join('')}${warn.map(w => ` -W ${w}`).join('')}${configFileExists ? ` -c ${configFilePath}` : ''}`;
         const command = `${commandBase}${ignorePattern ? ` --ignore-pattern=${ignorePattern} ` : ''}${commandParams} ${params}`;
         const cwd = nodePath.join(process.cwd(), path);
         return new Promise((resolve, reject) => {

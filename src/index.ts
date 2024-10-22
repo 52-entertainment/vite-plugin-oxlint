@@ -13,7 +13,7 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
       path = '',
       ignorePattern = '',
       configFile = 'oxlintrc.json',
-      deny = ['correctness'],
+      deny = [],
       allow = [],
       warn = [],
       params = '',
@@ -22,11 +22,11 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
     const commandBase = `npx oxlint`
     const configFilePath = nodePath.join(process.cwd(), configFile)
     const configFileExists = existsSync(configFilePath)
-    const commandParams = configFileExists
-      ? ` -c ${configFilePath}`
-      : `${deny.map(d => ` -D ${d}`).join('')}${allow
-          .map(a => ` -A ${a}`)
-          .join('')}${warn.map(w => ` -W ${w}`).join('')}`
+    const commandParams = `${deny.map(d => ` -D ${d}`).join('')}${allow
+      .map(a => ` -A ${a}`)
+      .join('')}${warn.map(w => ` -W ${w}`).join('')}${
+      configFileExists ? ` -c ${configFilePath}` : ''
+    }`
     const command = `${commandBase}${
       ignorePattern ? ` --ignore-pattern=${ignorePattern} ` : ''
     }${commandParams} ${params}`

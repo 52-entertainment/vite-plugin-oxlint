@@ -26,7 +26,8 @@ export default {
 ### Oxlint Configuration File
 
 You can use a configuration file. See [Oxlint configuration file](https://oxc.rs/docs/guide/usage/linter/config.html).
-If you use a configuration file, other [Allow / Deny / Warn](#allow--deny--warn-rules) rules configurations will be ignored.
+[Allow / Deny / Warn](#allow--deny--warn-rules) will override config files rules.
+
 Default to `oxlintrc.json`.
 
 ```javascript
@@ -85,8 +86,7 @@ export default {
 You can allow, deny or warn oxlinter rules or categories.
 To see the list of available rules and categories, run:
 `npx oxlint --rules`
-
-Default to deny: correctness.
+This will override [config files](#oxlint-configuration-file).
 
 Example: deny (turn on) `correctness` and `perf` rules and allow (turn off) the `debugger` and `eqeqeq` rule.
 
