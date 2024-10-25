@@ -26,6 +26,7 @@ export default {
 ### Oxlint Configuration File
 
 You can use a configuration file. See [Oxlint configuration file](https://oxc.rs/docs/guide/usage/linter/config.html).
+
 [Allow / Deny / Warn](#allow--deny--warn-rules) will override config files rules.
 
 Default to `oxlintrc.json`.
