@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       oxlint:
-        specifier: ^0.15.2
+        specifier: ^0.15.3
         version: 0.15.3
     devDependencies:
       '@types/node':
