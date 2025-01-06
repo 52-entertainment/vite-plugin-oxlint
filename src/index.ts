@@ -1,5 +1,5 @@
 import { Plugin } from 'vite'
-import { exec } from 'child_process'
+import { spawn } from 'child_process'
 import nodePath from 'path'
 import { existsSync } from 'fs'
 import { Options } from './types'
@@ -19,33 +19,43 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
       params = '',
     } = options
 
-    const commandBase = `npx oxlint`
+    const args: string[] = []
+    if (ignorePattern) {
+      args.push(`--ignore-pattern=${ignorePattern}`)
+    }
+    deny.forEach(d => args.push('-D', d))
+    allow.forEach(a => args.push('-A', a))
+    warn.forEach(w => args.push('-W', w))
+
     const configFilePath = nodePath.join(process.cwd(), configFile)
-    const configFileExists = existsSync(configFilePath)
-    const commandParams = `${deny.map(d => ` -D ${d}`).join('')}${allow
-      .map(a => ` -A ${a}`)
-      .join('')}${warn.map(w => ` -W ${w}`).join('')}${
-      configFileExists ? ` -c ${configFilePath}` : ''
-    }`
-    const command = `${commandBase}${
-      ignorePattern ? ` --ignore-pattern=${ignorePattern} ` : ''
-    }${commandParams} ${params}`
+    if (existsSync(configFilePath)) {
+      args.push('-c', configFilePath)
+    }
+
+    if (params) {
+      args.push(...params.split(' ').filter(Boolean))
+    }
+
     const cwd = nodePath.join(process.cwd(), path)
 
     return new Promise<void>((resolve, reject) => {
-      exec(command, { cwd }, (error, stdout, stderr) => {
-        if (stderr) {
-          console.error(`oxlint Stderr: ${stderr}`)
-        }
-        if (stdout) {
-          console.log(`oxlint Output:\n${stdout}`)
-        }
-        if (error) {
-          console.error(`oxlint Error: ${error.message}`)
-          reject(error)
+      const child = spawn('oxlint', args, {
+        cwd,
+        stdio: 'inherit',
+      })
+
+      child.on('error', error => {
+        console.error(`oxlint Error: ${error.message}`)
+        reject(error)
+      })
+
+      child.on('exit', code => {
+        if (code === 0) {
+          console.log('Oxlint successfully finished.')
         } else {
-          resolve()
+          console.warn(`Oxlint finished with exit code: ${code}`)
         }
+        resolve()
       })
     })
   }
