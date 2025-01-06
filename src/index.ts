@@ -51,9 +51,11 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
 
       child.on('exit', code => {
         if (code === 0) {
-          console.log('Oxlint successfully finished.')
+          console.log('\nOxlint successfully finished.')
         } else {
-          console.warn(`Oxlint finished with exit code: ${code}`)
+          console.warn(
+            `\n\x1b[33mOxlint finished with exit code: ${code}\x1b[0m`
+          )
         }
         resolve()
       })
