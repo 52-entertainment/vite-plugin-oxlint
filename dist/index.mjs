@@ -22,7 +22,7 @@ const oxlintPlugin = (options = {}) => {
         }
         const cwd = nodePath.join(process.cwd(), path);
         return new Promise((resolve, reject) => {
-            const child = spawn('oxlint', args, {
+            const child = spawn('npx', ['oxlint', ...args], {
                 cwd,
                 stdio: 'inherit',
             });

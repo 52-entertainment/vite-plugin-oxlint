@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-oxlint",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Oxlint plugin for vite.",
   "author": "Arnaud Riu",
   "license": "MIT",
@@ -31,13 +31,15 @@
     "vite",
     "vite-plugin"
   ],
+  "dependencies": {
+    "oxlint": "^0.15.8"
+  },
   "devDependencies": {
-    "@types/node": "^22.10.5",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.7"
+    "@types/node": "^22.10.10",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.11"
   },
   "peerDependencies": {
-    "oxlint": "^0.15.5",
     "vite": "^6.0.7"
   },
   "packageManager": "pnpm@9.15.3"
