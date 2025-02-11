@@ -42,6 +42,7 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
       const child = spawn('npx', ['oxlint', ...args], {
         cwd,
         stdio: 'inherit',
+        shell: true
       })
 
       child.on('error', error => {
