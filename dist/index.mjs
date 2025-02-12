@@ -25,6 +25,7 @@ const oxlintPlugin = (options = {}) => {
             const child = spawn('npx', ['oxlint', ...args], {
                 cwd,
                 stdio: 'inherit',
+                shell: true
             });
             child.on('error', error => {
                 console.error(`oxlint Error: ${error.message}`);
