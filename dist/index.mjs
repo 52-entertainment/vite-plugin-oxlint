@@ -1,11 +1,13 @@
 import { spawn } from 'child_process';
 import nodePath from 'path';
 import { existsSync } from 'fs';
+import { detect } from 'package-manager-detector/detect';
+import { resolveCommand } from 'package-manager-detector/commands';
 const oxlintPlugin = (options = {}) => {
     let timeoutId = null;
     const debounceTime = 300;
     const executeCommand = async () => {
-        const { path = '', ignorePattern = '', configFile = 'oxlintrc.json', deny = [], allow = [], warn = [], params = '', } = options;
+        const { path = '', ignorePattern = '', configFile = 'oxlintrc.json', deny = [], allow = [], warn = [], params = '' } = options;
         const args = [];
         if (ignorePattern) {
             args.push(`--ignore-pattern=${ignorePattern}`);
@@ -21,11 +23,25 @@ const oxlintPlugin = (options = {}) => {
             args.push(...params.split(' ').filter(Boolean));
         }
         const cwd = nodePath.join(process.cwd(), path);
+        const pm = await detect();
+        if (!pm)
+            throw new Error('Could not detect package manager');
         return new Promise((resolve, reject) => {
-            const child = spawn('npx', ['oxlint', ...args], {
+            const { command: cmd, args: cmdArgs } = resolveCommand(pm.agent, 'execute-local', ['oxlint', ...args]);
+            const child = spawn(cmd, cmdArgs, {
                 cwd,
-                stdio: 'inherit',
-                shell: true
+                stdio: 'pipe',
+                shell: true,
+                env: {
+                    ...process.env,
+                    FORCE_COLOR: '1'
+                }
+            });
+            child.stdout?.pipe(process.stdout);
+            let stderrOutput = '';
+            child.stderr?.on('data', data => {
+                stderrOutput += data.toString();
+                process.stderr.write(data); // Forward stderr with formatting intact
             });
             child.on('error', error => {
                 console.error(`oxlint Error: ${error.message}`);
@@ -62,7 +78,7 @@ const oxlintPlugin = (options = {}) => {
         },
         async handleHotUpdate() {
             await handleCommandExecution();
-        },
+        }
     };
 };
 export default oxlintPlugin;

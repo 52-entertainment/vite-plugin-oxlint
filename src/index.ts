@@ -3,6 +3,8 @@ import { spawn } from 'child_process'
 import nodePath from 'path'
 import { existsSync } from 'fs'
 import { Options } from './types'
+import { detect } from 'package-manager-detector/detect'
+import { resolveCommand } from 'package-manager-detector/commands'
 
 const oxlintPlugin = (options: Options = {}): Plugin => {
   let timeoutId: NodeJS.Timeout | null = null
@@ -16,7 +18,7 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
       deny = [],
       allow = [],
       warn = [],
-      params = '',
+      params = ''
     } = options
 
     const args: string[] = []
@@ -38,11 +40,32 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
 
     const cwd = nodePath.join(process.cwd(), path)
 
+    const pm = await detect()
+    if (!pm) throw new Error('Could not detect package manager')
+
     return new Promise<void>((resolve, reject) => {
-      const child = spawn('npx', ['oxlint', ...args], {
+      const { command: cmd, args: cmdArgs } = resolveCommand(
+        pm.agent,
+        'execute-local',
+        ['oxlint', ...args]
+      ) as { command: string; args: string[] }
+
+      const child = spawn(cmd, cmdArgs, {
         cwd,
-        stdio: 'inherit',
-        shell: true
+        stdio: 'pipe',
+        shell: true,
+        env: {
+          ...process.env,
+          FORCE_COLOR: '1'
+        }
+      })
+
+      child.stdout?.pipe(process.stdout)
+
+      let stderrOutput = ''
+      child.stderr?.on('data', data => {
+        stderrOutput += data.toString()
+        process.stderr.write(data) // Forward stderr with formatting intact
       })
 
       child.on('error', error => {
@@ -84,7 +107,7 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
     },
     async handleHotUpdate() {
       await handleCommandExecution()
-    },
+    }
   }
 }
 
