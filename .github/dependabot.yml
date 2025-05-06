@@ -10,6 +10,6 @@ updates:
     schedule:
       interval: "monthly"
     groups:
-      support-dependencies:
+      dependencies:
         patterns:
           - "*"
