@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-oxlint",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Oxlint plugin for vite.",
   "author": "Arnaud Riu",
   "license": "MIT",
