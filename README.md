@@ -16,7 +16,7 @@ Add the plugin to your `vite.config.js` file.
 import oxlintPlugin from 'vite-plugin-oxlint'
 
 export default {
-  plugins: [oxlintPlugin()],
+  plugins: [oxlintPlugin()]
 }
 ```
 
@@ -26,9 +26,9 @@ export default {
 
 You can use a configuration file. See [Oxlint configuration file](https://oxc.rs/docs/guide/usage/linter/config.html).
 
-[Allow / Deny / Warn](#allow--deny--warn-rules) will override config files rules.
+[Allow / Deny / Warn](#allow--deny--warn-rules) will override config file rules.
 
-Default to `oxlintrc.json`.
+Default is `oxlintrc.json`.
 
 ```javascript
 import oxlintPlugin from 'vite-plugin-oxlint'
@@ -36,18 +36,18 @@ import oxlintPlugin from 'vite-plugin-oxlint'
 export default {
   plugins: [
     oxlintPlugin({
-      configFile: 'eslintrc.json',
-    }),
-  ],
+      configFile: 'eslintrc.json'
+    })
+  ]
 }
 ```
 
 ### Change working directory
 
-You can change the directory where oxlinter will run.
-Default to the root of your project.
+You can change the directory where oxlint will run.
+Default is the root of your project.
 
-Examples: only lint files in your `src` directory.
+Example: only lint files in your `src` directory.
 
 ```javascript
 import oxlintPlugin from 'vite-plugin-oxlint'
@@ -55,18 +55,18 @@ import oxlintPlugin from 'vite-plugin-oxlint'
 export default {
   plugins: [
     oxlintPlugin({
-      path: 'src',
-    }),
-  ],
+      path: 'src'
+    })
+  ]
 }
 ```
 
 ### Ignore patterns
 
-You can specify patterns of files to ignore. The supported syntax is the same as for .eslintignore and .gitignore files You should quote your patterns in order to avoid shell interpretation of glob patterns
+You can specify patterns of files to ignore. The supported syntax is the same as for `.eslintignore` and `.gitignore` files. You should quote your patterns to avoid shell interpretation of glob patterns.
 See [oxlint ignore](https://oxc.rs/docs/guide/usage/linter/cli.html#ignore-files)
 
-Example: lint files in your `src`, but not test.js files:
+Example: lint files in your `src` directory, but not `test.js` files:
 
 ```javascript
 import oxlintPlugin from 'vite-plugin-oxlint'
@@ -75,20 +75,20 @@ export default {
   plugins: [
     oxlintPlugin({
       path: 'src',
-      ignorePattern: '"test.js"',
-    }),
-  ],
+      ignorePattern: '"test.js"'
+    })
+  ]
 }
 ```
 
 ### Allow / Deny / Warn rules
 
-You can allow, deny or warn oxlinter rules or categories.
+You can allow, deny or warn oxlint rules or categories.
 To see the list of available rules and categories, run:
 `npx oxlint --rules`
-This will override [config files](#oxlint-configuration-file).
+This will override [config file](#oxlint-configuration-file) rules.
 
-Example: deny (turn on) `correctness` and `perf` rules and allow (turn off) the `debugger` and `eqeqeq` rule.
+Example: deny (turn on) `correctness` and `perf` rules and allow (turn off) the `debugger` and `eqeqeq` rules.
 
 ```javascript
 import oxlintPlugin from 'vite-plugin-oxlint'
@@ -98,9 +98,9 @@ export default {
     oxlintPlugin({
       deny: ['correctness', 'perf'],
       allow: ['debugger', 'eqeqeq'],
-      warn: [],
-    }),
-  ],
+      warn: []
+    })
+  ]
 }
 ```
 
@@ -109,7 +109,7 @@ export default {
 You can pass any additional oxlint config as a string.
 See [oxlint options](https://oxc-project.github.io/docs/guide/usage/linter.html#useful-options) for a list of available options.
 
-Example: add the `--deny-warnings` and `--quiet` option to the `vite-plugin-oxlint` config:
+Example: add the `--deny-warnings` and `--quiet` options to the `vite-plugin-oxlint` config:
 
 ```javascript
 import oxlintPlugin from 'vite-plugin-oxlint'
@@ -117,22 +117,22 @@ import oxlintPlugin from 'vite-plugin-oxlint'
 export default {
   plugins: [
     oxlintPlugin({
-      params: '--deny-warnings --quiet',
-    }),
-  ],
+      params: '--deny-warnings --quiet'
+    })
+  ]
 }
 ```
 
-## Integration with ESlint
+## Integration with ESLint
 
-If your project still needs ESlint, you can use [vite-plugin-eslint](https://github.com/gxmari007/vite-plugin-eslint) and configure ESlint with [eslint-plugin-oxlint](https://github.com/oxc-project/eslint-plugin-oxlint) to turn off rules already supported in oxlint
+If your project still needs ESLint, you can use [vite-plugin-eslint](https://github.com/gxmari007/vite-plugin-eslint) and configure ESLint with [eslint-plugin-oxlint](https://github.com/oxc-project/eslint-plugin-oxlint) to turn off rules already supported by oxlint.
 
 ```javascript
 import oxlintPlugin from 'vite-plugin-oxlint'
 import eslintPlugin from 'vite-plugin-eslint'
 
 export default {
-  plugins: [oxlintPlugin(), eslintPlugin()],
+  plugins: [oxlintPlugin(), eslintPlugin()]
 }
 ```
 
