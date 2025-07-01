@@ -123,6 +123,24 @@ export default {
 }
 ```
 
+### Change oxlint path
+
+If you're using this plugin in a monorepo and encountering "command not found: oxlint" errors, you can manually specify the path to the oxlint binary.
+
+If no local oxlint binary is found, the plugin will gracefully fall back to using npx (or the equivalent command for your package manager).
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+
+export default {
+  plugins: [
+    oxlintPlugin({
+      oxlintPath: '/path/to/your/monorepo/node_modules/.bin/oxlint'
+    })
+  ]
+}
+```
+
 ## Integration with ESLint
 
 If your project still needs ESLint, you can use [vite-plugin-eslint](https://github.com/gxmari007/vite-plugin-eslint) and configure ESLint with [eslint-plugin-oxlint](https://github.com/oxc-project/eslint-plugin-oxlint) to turn off rules already supported by oxlint.

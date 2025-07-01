@@ -6,4 +6,5 @@ export interface Options {
     allow?: string[];
     warn?: string[];
     params?: string;
+    oxlintPath?: string;
 }
