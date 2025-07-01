@@ -31,7 +31,7 @@ const oxlintPlugin = (options = {}) => {
             const child = spawn(cmd, cmdArgs, {
                 cwd,
                 stdio: 'pipe',
-                shell: true,
+                shell: false,
                 env: {
                     ...process.env,
                     FORCE_COLOR: '1'
