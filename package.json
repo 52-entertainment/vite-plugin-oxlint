@@ -32,7 +32,7 @@
     "vite-plugin"
   ],
   "dependencies": {
-    "oxlint": "^1.20.0",
+    "oxlint": "^1.22.0",
     "package-manager-detector": "^1.4.0"
   },
   "devDependencies": {
