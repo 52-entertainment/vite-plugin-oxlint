@@ -21,10 +21,10 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: "👋 Cette PR a été automatiquement fermée.\n\n" +
-                    "**Raison** : Ce repo maintient ses dépendances manuellement de façon régulière.\n" +
-                    "Dependabot est activé au niveau entreprise mais n'est pas nécessaire ici.\n\n" +
-                    "Les mises à jour de sécurité sont suivies via notre processus interne."
+              body: "👋 This PR has been automatically closed.\n\n" +
+                    "**Reason**: This repository maintains its dependencies manually on a regular basis.\n" +
+                    "Dependabot is enabled at the organization level but is not needed here.\n\n" +
+                    "Security updates are tracked through our internal process."
             });
 
             await github.rest.pulls.update({
