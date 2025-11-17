@@ -1,5 +1,5 @@
 import { Plugin } from 'vite'
-import { spawn } from 'child_process'
+import { spawn }  from 'cross-spawn'
 import nodePath from 'path'
 import { existsSync } from 'fs'
 import { Options } from './types'
