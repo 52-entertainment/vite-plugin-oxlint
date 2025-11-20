@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { spawn } from 'cross-spawn';
 import nodePath from 'path';
 import { existsSync } from 'fs';
 import { detect } from 'package-manager-detector/detect';
