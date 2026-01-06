@@ -34,7 +34,7 @@
   "dependencies": {
     "@types/cross-spawn": "^6.0.6",
     "cross-spawn": "^7.0.6",
-    "oxlint": "^1.36.0",
+    "oxlint": "^1.37.0",
     "package-manager-detector": "^1.6.0"
   },
   "devDependencies": {
