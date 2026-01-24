@@ -29,7 +29,18 @@ const oxlintPlugin = (options = {}) => {
         return new Promise((resolve, reject) => {
             let isExecuteLocal = true;
             const executeWithFallback = (useExecuteLocal) => {
-                const { command: cmd, args: cmdArgs } = resolveCommand(pm.agent, useExecuteLocal ? 'execute-local' : 'execute', [useExecuteLocal ? oxlintPath || 'oxlint' : 'oxlint', ...args]);
+                // If oxlintPath is absolute, execute it directly instead of through package manager
+                let cmd;
+                let cmdArgs;
+                if (oxlintPath && nodePath.isAbsolute(oxlintPath)) {
+                    cmd = oxlintPath;
+                    cmdArgs = args;
+                }
+                else {
+                    const resolved = resolveCommand(pm.agent, useExecuteLocal ? 'execute-local' : 'execute', [useExecuteLocal ? oxlintPath || 'oxlint' : 'oxlint', ...args]);
+                    cmd = resolved.command;
+                    cmdArgs = resolved.args;
+                }
                 const child = spawn(cmd, cmdArgs, {
                     cwd,
                     stdio: 'pipe',
