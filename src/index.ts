@@ -48,8 +48,6 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
     if (!pm) throw new Error('Could not detect package manager')
 
     return new Promise<void>((resolve, reject) => {
-      let isExecuteLocal = true
-
       const executeWithFallback = (useExecuteLocal: boolean) => {
         const {
           command: cmd,
@@ -88,7 +86,7 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
         })
 
         child.on('error', error => {
-          console.error(`oxlint Error: ${error.message}`)
+          console.error(`\noxlint Error: ${error.message}`)
           reject(error)
         })
 
@@ -96,9 +94,8 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
           if (code === 0) {
             console.log('\nOxlint successfully finished.')
             resolve()
-          } else if (useExecuteLocal && code !== 1) {
-            isExecuteLocal = false
-            executeWithFallback(isExecuteLocal)
+          } else if (!oxlintPath && useExecuteLocal && code !== 1) {
+            executeWithFallback(false)
           } else {
             console.warn(
               `\n\x1b[33mOxlint finished with exit code: ${code}\x1b[0m`
@@ -108,7 +105,7 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
         })
       }
 
-      executeWithFallback(isExecuteLocal)
+      executeWithFallback(true)
     })
   }
 
