@@ -160,5 +160,3 @@ export default {
 ## License
 
 [MIT LICENSE](LICENSE)
-
-[GitHub](https://github.com/52-entertainment/vite-plugin-oxlint)

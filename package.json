@@ -33,11 +33,11 @@
     "vite-plugin"
   ],
   "dependencies": {
-    "@types/cross-spawn": "^6.0.6",
     "cross-spawn": "^7.0.6",
     "package-manager-detector": "^1.6.0"
   },
   "devDependencies": {
+    "@types/cross-spawn": "^6.0.6",
     "@types/node": "^25.0.10",
     "oxlint": "^1.41.0",
     "typescript": "^5.9.3",
