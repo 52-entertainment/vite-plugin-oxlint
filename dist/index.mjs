@@ -22,7 +22,8 @@ const oxlintPlugin = (options = {}) => {
         if (params) {
             args.push(...params.split(' ').filter(Boolean));
         }
-        const cwd = nodePath.join(process.cwd(), path);
+        // Use path directly if absolute, otherwise join with cwd
+        const cwd = nodePath.isAbsolute(path) ? path : nodePath.join(process.cwd(), path);
         const pm = await detect();
         if (!pm)
             throw new Error('Could not detect package manager');
