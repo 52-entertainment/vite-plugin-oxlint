@@ -30,7 +30,9 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
     allow.forEach(a => args.push('-A', a))
     warn.forEach(w => args.push('-W', w))
 
-    const configFilePath = nodePath.join(process.cwd(), configFile)
+    const configFilePath = nodePath.isAbsolute(configFile)
+      ? configFile
+      : nodePath.join(process.cwd(), configFile)
     if (existsSync(configFilePath)) {
       args.push('-c', configFilePath)
     }
@@ -40,7 +42,9 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
     }
 
     // Use path directly if absolute, otherwise join with cwd
-    const cwd = nodePath.isAbsolute(path) ? path : nodePath.join(process.cwd(), path)
+    const cwd = nodePath.isAbsolute(path)
+      ? path
+      : nodePath.join(process.cwd(), path)
 
     const pm = await detect()
     if (!pm) throw new Error('Could not detect package manager')
