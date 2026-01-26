@@ -1,3 +1,6 @@
+[![npm version](https://img.shields.io/npm/v/vite-plugin-oxlint.svg)](https://www.npmjs.com/package/vite-plugin-oxlint)
+[![license](https://img.shields.io/npm/l/vite-plugin-oxlint.svg)](https://github.com/52-entertainment/vite-plugin-oxlint/blob/main/LICENSE)
+
 # ⚓️+⚡️Vite Plugin Oxlint
 
 This is a Vite plugin for integrating the [Oxlint](https://oxc-project.github.io) linter into your Vite project.
