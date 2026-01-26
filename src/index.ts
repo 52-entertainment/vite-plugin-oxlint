@@ -6,6 +6,9 @@ import { Options } from './types'
 import { detect } from 'package-manager-detector/detect'
 import { resolveCommand } from 'package-manager-detector/commands'
 
+const resolveAbsolutePath = (p: string): string =>
+  nodePath.isAbsolute(p) ? p : nodePath.join(process.cwd(), p)
+
 const oxlintPlugin = (options: Options = {}): Plugin => {
   let timeoutId: NodeJS.Timeout | null = null
   const debounceTime = 300
@@ -30,9 +33,7 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
     allow.forEach(a => args.push('-A', a))
     warn.forEach(w => args.push('-W', w))
 
-    const configFilePath = nodePath.isAbsolute(configFile)
-      ? configFile
-      : nodePath.join(process.cwd(), configFile)
+    const configFilePath = resolveAbsolutePath(configFile)
     if (existsSync(configFilePath)) {
       args.push('-c', configFilePath)
     }
@@ -41,10 +42,7 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
       args.push(...params.split(' ').filter(Boolean))
     }
 
-    // Use path directly if absolute, otherwise join with cwd
-    const cwd = nodePath.isAbsolute(path)
-      ? path
-      : nodePath.join(process.cwd(), path)
+    const cwd = resolveAbsolutePath(path)
 
     const pm = await detect()
     if (!pm) throw new Error('Could not detect package manager')
@@ -53,21 +51,16 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
       let isExecuteLocal = true
 
       const executeWithFallback = (useExecuteLocal: boolean) => {
-        // If oxlintPath is absolute, execute it directly instead of through package manager
-        let cmd: string
-        let cmdArgs: string[]
-        if (oxlintPath && nodePath.isAbsolute(oxlintPath)) {
-          cmd = oxlintPath
-          cmdArgs = args
-        } else {
-          const resolved = resolveCommand(
-            pm.agent,
-            useExecuteLocal ? 'execute-local' : 'execute',
-            [useExecuteLocal ? oxlintPath || 'oxlint' : 'oxlint', ...args]
-          ) as { command: string; args: string[] }
-          cmd = resolved.command
-          cmdArgs = resolved.args
-        }
+        const {
+          command: cmd,
+          args: cmdArgs
+        }: { command: string; args: string[] } = oxlintPath
+          ? { command: resolveAbsolutePath(oxlintPath), args }
+          : resolveCommand(
+              pm.agent,
+              useExecuteLocal ? 'execute-local' : 'execute',
+              ['oxlint', ...args]
+            )!
 
         const child = spawn(cmd, cmdArgs, {
           cwd,
@@ -79,9 +72,6 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
           }
         })
 
-        // child.stdout?.pipe(process.stdout)
-
-        let stderrOutput = ''
         child.stdout?.on('data', data => {
           const dataString = data.toString()
 
@@ -89,13 +79,11 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
             !dataString.includes('undefined') &&
             !(dataString.includes('not found') && useExecuteLocal)
           ) {
-            stderrOutput += dataString
             process.stdout.write(data)
           }
         })
 
         child.stderr?.on('data', data => {
-          stderrOutput += data.toString()
           process.stderr.write(data)
         })
 
