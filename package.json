@@ -24,6 +24,7 @@
   ],
   "scripts": {
     "build": "tsc && node rename-to-mjs.js",
+    "prepublishOnly": "pnpm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
