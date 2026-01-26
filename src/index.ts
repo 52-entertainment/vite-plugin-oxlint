@@ -12,6 +12,14 @@ const resolveAbsolutePath = (p: string): string =>
 const oxlintPlugin = (options: Options = {}): Plugin => {
   let timeoutId: NodeJS.Timeout | null = null
   const debounceTime = 300
+  let pmPromise: ReturnType<typeof detect> | null = null
+
+  const getPm = () => {
+    if (!pmPromise) {
+      pmPromise = detect()
+    }
+    return pmPromise
+  }
 
   const executeCommand = async () => {
     const {
@@ -44,7 +52,7 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
 
     const cwd = resolveAbsolutePath(path)
 
-    const pm = await detect()
+    const pm = await getPm()
     if (!pm) throw new Error('Could not detect package manager')
 
     return new Promise<void>((resolve, reject) => {
