@@ -119,25 +119,6 @@ export default {
 }
 ```
 
-### Additional oxlint config:
-
-You can pass any additional oxlint config as a string.
-See [oxlint options](https://oxc-project.github.io/docs/guide/usage/linter.html#useful-options) for a list of available options.
-
-Example: add the `--deny-warnings` and `--quiet` options to the `vite-plugin-oxlint` config:
-
-```javascript
-import oxlintPlugin from 'vite-plugin-oxlint'
-
-export default {
-  plugins: [
-    oxlintPlugin({
-      params: '--deny-warnings --quiet'
-    })
-  ]
-}
-```
-
 ### Change oxlint path
 
 If you're using this plugin in a monorepo and encountering "command not found: oxlint" errors, you can manually specify the path to the oxlint binary.
@@ -169,6 +150,22 @@ export default {
   plugins: [
     oxlintPlugin({
       format: 'stylish'
+    })
+  ]
+}
+```
+
+### Quiet mode
+
+Suppress warnings and only report errors:
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+
+export default {
+  plugins: [
+    oxlintPlugin({
+      quiet: true
     })
   ]
 }
@@ -232,6 +229,25 @@ export default {
   plugins: [
     oxlintPlugin({
       lintOnStart: false
+    })
+  ]
+}
+```
+
+### Additional oxlint config:
+
+You can pass any additional oxlint config as a string.
+See [oxlint options](https://oxc-project.github.io/docs/guide/usage/linter.html#useful-options) for a list of available options.
+
+Example: add the `--deny-warnings` and `--quiet` options to the `vite-plugin-oxlint` config:
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+
+export default {
+  plugins: [
+    oxlintPlugin({
+      params: '--deny-warnings --quiet'
     })
   ]
 }
