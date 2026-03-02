@@ -144,6 +144,24 @@ export default {
 }
 ```
 
+### Output format
+
+You can change the output format of oxlint diagnostics.
+Available formats: `default`, `checkstyle`, `github`, `gitlab`, `json`, `junit`, `stylish`, `unix`.
+See [oxlint output formats](https://oxc.rs/docs/guide/usage/linter/output-formats.html#output-formats).
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+
+export default {
+  plugins: [
+    oxlintPlugin({
+      format: 'stylish'
+    })
+  ]
+}
+```
+
 ## Integration with ESLint
 
 If your project still needs ESLint, you can use [vite-plugin-eslint](https://github.com/gxmari007/vite-plugin-eslint) and configure ESLint with [eslint-plugin-oxlint](https://github.com/oxc-project/eslint-plugin-oxlint) to turn off rules already supported by oxlint.

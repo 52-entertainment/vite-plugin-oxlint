@@ -7,4 +7,13 @@ export interface Options {
   warn?: string[]
   params?: string
   oxlintPath?: string
+  format?:
+    | 'default'
+    | 'checkstyle'
+    | 'github'
+    | 'gitlab'
+    | 'json'
+    | 'junit'
+    | 'stylish'
+    | 'unix'
 }

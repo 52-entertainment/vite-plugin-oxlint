@@ -30,10 +30,14 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
       allow = [],
       warn = [],
       params = '',
-      oxlintPath = ''
+      oxlintPath = '',
+      format = ''
     } = options
 
     const args: string[] = []
+    if (format) {
+      args.push('--format', format)
+    }
     if (ignorePattern) {
       args.push(`--ignore-pattern=${ignorePattern}`)
     }
