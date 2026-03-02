@@ -1,4 +1,4 @@
-import { Plugin } from 'vite'
+import { Plugin, Logger } from 'vite'
 import { spawn } from 'cross-spawn'
 import nodePath from 'path'
 import { existsSync } from 'fs'
@@ -13,6 +13,7 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
   let timeoutId: NodeJS.Timeout | null = null
   const debounceTime = 300
   let pmPromise: ReturnType<typeof detect> | null = null
+  let logger: Logger | undefined
 
   const getPm = () => {
     if (!pmPromise) {
@@ -31,10 +32,14 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
       warn = [],
       params = '',
       oxlintPath = '',
-      format = ''
+      format = '',
+      quiet = false
     } = options
 
     const args: string[] = []
+    if (quiet) {
+      args.push('--quiet')
+    }
     if (format) {
       args.push('--format', format)
     }
@@ -89,29 +94,33 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
             !dataString.includes('undefined') &&
             !(dataString.includes('not found') && useExecuteLocal)
           ) {
-            process.stdout.write(data)
+            const trimmed = dataString.trimEnd()
+            if (trimmed) {
+              logger?.info(trimmed)
+            }
           }
         })
 
         child.stderr?.on('data', data => {
-          process.stderr.write(data)
+          const trimmed = data.toString().trimEnd()
+          if (trimmed) {
+            logger?.error(trimmed)
+          }
         })
 
         child.on('error', error => {
-          console.error(`\noxlint Error: ${error.message}`)
+          logger?.error(`oxlint Error: ${error.message}`)
           reject(error)
         })
 
         child.on('exit', code => {
           if (code === 0) {
-            console.log('\nOxlint successfully finished.')
+            logger?.info('Oxlint successfully finished.')
             resolve()
           } else if (!oxlintPath && useExecuteLocal && code !== 1) {
             executeWithFallback(false)
           } else {
-            console.warn(
-              `\n\x1b[33mOxlint finished with exit code: ${code}\x1b[0m`
-            )
+            logger?.warn(`Oxlint finished with exit code: ${code}`)
             resolve()
           }
         })
@@ -130,13 +139,16 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
       try {
         await executeCommand()
       } catch (error) {
-        console.error('Error executing command:', error)
+        logger?.error(`Error executing command: ${error}`)
       }
     }, debounceTime)
   }
 
   return {
     name: 'vite-plugin-oxlint',
+    configResolved(config) {
+      logger = config.logger
+    },
     async buildStart() {
       await handleCommandExecution()
     },

@@ -16,4 +16,5 @@ export interface Options {
     | 'junit'
     | 'stylish'
     | 'unix'
+  quiet?: boolean
 }
