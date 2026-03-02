@@ -69,7 +69,7 @@ export default {
 You can specify patterns of files to ignore. The supported syntax is the same as for `.eslintignore` and `.gitignore` files. You should quote your patterns to avoid shell interpretation of glob patterns.
 See [oxlint ignore](https://oxc.rs/docs/guide/usage/linter/cli.html#ignore-files)
 
-Example: lint files in your `src` directory, but not `test.js` files:
+You can pass a single pattern or an array of patterns:
 
 ```javascript
 import oxlintPlugin from 'vite-plugin-oxlint'
@@ -79,6 +79,18 @@ export default {
     oxlintPlugin({
       path: 'src',
       ignorePattern: '"test.js"'
+    })
+  ]
+}
+```
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+
+export default {
+  plugins: [
+    oxlintPlugin({
+      ignorePattern: ['"test.js"', '"dist/**"']
     })
   ]
 }
@@ -157,6 +169,69 @@ export default {
   plugins: [
     oxlintPlugin({
       format: 'stylish'
+    })
+  ]
+}
+```
+
+### Auto-fix
+
+Enable auto-fixing of lint issues:
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+
+export default {
+  plugins: [
+    oxlintPlugin({
+      fix: true
+    })
+  ]
+}
+```
+
+### Fail on errors
+
+By default, lint errors are logged as warnings and don't fail the build. You can change this behavior:
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+
+export default {
+  plugins: [
+    oxlintPlugin({
+      failOnError: true
+    })
+  ]
+}
+```
+
+To also fail on warnings:
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+
+export default {
+  plugins: [
+    oxlintPlugin({
+      failOnError: true,
+      failOnWarning: true
+    })
+  ]
+}
+```
+
+### Disable lint on build start
+
+By default, oxlint runs when the build starts. You can disable this to only lint on file changes during development:
+
+```javascript
+import oxlintPlugin from 'vite-plugin-oxlint'
+
+export default {
+  plugins: [
+    oxlintPlugin({
+      lintOnStart: false
     })
   ]
 }
