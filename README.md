@@ -3,7 +3,23 @@
 
 # ⚓️+⚡️Vite Plugin Oxlint
 
-This is a Vite plugin for integrating the [Oxlint](https://oxc-project.github.io) linter into your Vite project.
+A Vite plugin for integrating the [Oxlint](https://oxc-project.github.io) linter into your Vite project.
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Options](#options)
+- [Advanced Usage](#advanced-usage)
+  - [Configuration file](#configuration-file)
+  - [Working directory](#working-directory)
+  - [Ignore patterns](#ignore-patterns)
+  - [Allow / Deny / Warn rules](#allow--deny--warn-rules)
+  - [Oxlint binary path](#oxlint-binary-path)
+  - [Output format](#output-format)
+  - [Fail on errors or warnings](#fail-on-errors-or-warnings)
+  - [Additional CLI options](#additional-cli-options)
+- [Integration with ESLint](#integration-with-eslint)
 
 ## Installation
 
@@ -13,8 +29,6 @@ npm install vite-plugin-oxlint oxlint
 
 ## Usage
 
-Add the plugin to your `vite.config.js` file.
-
 ```javascript
 import oxlintPlugin from 'vite-plugin-oxlint'
 
@@ -23,239 +37,127 @@ export default {
 }
 ```
 
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `configFile` | `string` | `oxlintrc.json` | Path to the oxlint config file |
+| `path` | `string` | `.` | Directory where oxlint runs |
+| `ignorePattern` | `string \| string[]` | — | Glob patterns of files to ignore |
+| `allow` | `string[]` | — | Rules/categories to allow (turn off) |
+| `deny` | `string[]` | — | Rules/categories to deny (turn on) |
+| `warn` | `string[]` | — | Rules/categories to warn |
+| `oxlintPath` | `string` | — | Path to the oxlint binary (useful in monorepos) |
+| `format` | `string` | `default` | Output format (`default`, `checkstyle`, `github`, `gitlab`, `json`, `junit`, `stylish`, `unix`) |
+| `quiet` | `boolean` | `false` | Suppress warnings, only report errors |
+| `fix` | `boolean` | `false` | Enable auto-fixing |
+| `failOnError` | `boolean` | `false` | Fail the build on lint errors |
+| `failOnWarning` | `boolean` | `false` | Fail the build on lint warnings |
+| `lintOnStart` | `boolean` | `true` | Run oxlint when the build starts |
+| `params` | `string` | — | Additional raw CLI flags passed to oxlint |
+
 ## Advanced Usage
 
-### Oxlint Configuration File
-
-You can use a configuration file. See [Oxlint configuration file](https://oxc.rs/docs/guide/usage/linter/config.html).
-
-[Allow / Deny / Warn](#allow--deny--warn-rules) will override config file rules.
-
-Default is `oxlintrc.json`.
+All examples below assume the following setup:
 
 ```javascript
 import oxlintPlugin from 'vite-plugin-oxlint'
 
 export default {
-  plugins: [
-    oxlintPlugin({
-      configFile: 'eslintrc.json'
-    })
-  ]
+  plugins: [oxlintPlugin({ /* options here */ })]
 }
 ```
 
-### Change working directory
+### Configuration file
 
-You can change the directory where oxlint will run.
-Default is the root of your project.
-
-Example: only lint files in your `src` directory.
+Use a custom [oxlint config file](https://oxc.rs/docs/guide/usage/linter/config.html). Default is `oxlintrc.json`.
+Note: `allow`, `deny`, and `warn` options override config file rules.
 
 ```javascript
-import oxlintPlugin from 'vite-plugin-oxlint'
+{ configFile: 'eslintrc.json' }
+```
 
-export default {
-  plugins: [
-    oxlintPlugin({
-      path: 'src'
-    })
-  ]
-}
+### Working directory
+
+Restrict linting to a subdirectory. Default is the project root.
+
+```javascript
+{ path: 'src' }
 ```
 
 ### Ignore patterns
 
-You can specify patterns of files to ignore. The supported syntax is the same as for `.eslintignore` and `.gitignore` files. You should quote your patterns to avoid shell interpretation of glob patterns.
-See [oxlint ignore](https://oxc.rs/docs/guide/usage/linter/cli.html#ignore-files)
-
-You can pass a single pattern or an array of patterns:
+Ignore files using `.gitignore`-style patterns. See [oxlint ignore docs](https://oxc.rs/docs/guide/usage/linter/cli.html#ignore-files).
+Quote patterns to avoid shell glob interpretation.
 
 ```javascript
-import oxlintPlugin from 'vite-plugin-oxlint'
+// Single pattern
+{ ignorePattern: '"test.js"' }
 
-export default {
-  plugins: [
-    oxlintPlugin({
-      path: 'src',
-      ignorePattern: '"test.js"'
-    })
-  ]
-}
-```
-
-```javascript
-import oxlintPlugin from 'vite-plugin-oxlint'
-
-export default {
-  plugins: [
-    oxlintPlugin({
-      ignorePattern: ['"test.js"', '"dist/**"']
-    })
-  ]
-}
+// Multiple patterns
+{ ignorePattern: ['"test.js"', '"dist/**"'] }
 ```
 
 ### Allow / Deny / Warn rules
 
-You can allow, deny or warn oxlint rules or categories.
-To see the list of available rules and categories, run:
-`npx oxlint --rules`
-This will override [config file](#oxlint-configuration-file) rules.
-
-Example: deny (turn on) `correctness` and `perf` rules and allow (turn off) the `debugger` and `eqeqeq` rules.
+Control which rules or categories are active. Run `npx oxlint --rules` to list available rules and categories.
+These options override any rules defined in the config file.
 
 ```javascript
-import oxlintPlugin from 'vite-plugin-oxlint'
-
-export default {
-  plugins: [
-    oxlintPlugin({
-      deny: ['correctness', 'perf'],
-      allow: ['debugger', 'eqeqeq'],
-      warn: []
-    })
-  ]
+{
+  deny: ['correctness', 'perf'],   // turn on
+  allow: ['debugger', 'eqeqeq'],  // turn off
+  warn: ['suspicious']
 }
 ```
 
-### Change oxlint path
+### Oxlint binary path
 
-If you're using this plugin in a monorepo and encountering "command not found: oxlint" errors, you can manually specify the path to the oxlint binary.
-
-If no local oxlint binary is found, the plugin will gracefully fall back to using npx (or the equivalent command for your package manager).
+In monorepos, if you get "command not found: oxlint" errors, specify the binary path explicitly.
+Without this option, the plugin falls back to `npx` (or your package manager's equivalent).
 
 ```javascript
-import oxlintPlugin from 'vite-plugin-oxlint'
-
-export default {
-  plugins: [
-    oxlintPlugin({
-      oxlintPath: '/path/to/your/monorepo/node_modules/.bin/oxlint'
-    })
-  ]
-}
+{ oxlintPath: '/path/to/your/monorepo/node_modules/.bin/oxlint' }
 ```
 
 ### Output format
 
-You can change the output format of oxlint diagnostics.
-Available formats: `default`, `checkstyle`, `github`, `gitlab`, `json`, `junit`, `stylish`, `unix`.
-See [oxlint output formats](https://oxc.rs/docs/guide/usage/linter/output-formats.html#output-formats).
+Change how lint diagnostics are reported. See [oxlint output formats](https://oxc.rs/docs/guide/usage/linter/output-formats.html).
+Available: `default`, `checkstyle`, `github`, `gitlab`, `json`, `junit`, `stylish`, `unix`.
 
 ```javascript
-import oxlintPlugin from 'vite-plugin-oxlint'
-
-export default {
-  plugins: [
-    oxlintPlugin({
-      format: 'stylish'
-    })
-  ]
-}
+{ format: 'stylish' }
 ```
 
-### Quiet mode
+### Fail on errors or warnings
 
-Suppress warnings and only report errors:
+By default, lint issues are logged but don't fail the build.
 
 ```javascript
-import oxlintPlugin from 'vite-plugin-oxlint'
+// Suppress warnings entirely (only report errors)
+{ quiet: true }
 
-export default {
-  plugins: [
-    oxlintPlugin({
-      quiet: true
-    })
-  ]
-}
+// Fail on errors
+{ failOnError: true }
+
+// Fail on warnings
+{ failOnWarning: true }
+
+// Disable linting at build start (only lint on file changes during dev)
+{ lintOnStart: false }
 ```
 
-### Auto-fix
+### Additional CLI options
 
-Enable auto-fixing of lint issues:
-
-```javascript
-import oxlintPlugin from 'vite-plugin-oxlint'
-
-export default {
-  plugins: [
-    oxlintPlugin({
-      fix: true
-    })
-  ]
-}
-```
-
-### Fail on errors
-
-By default, lint errors are logged as warnings and don't fail the build. You can change this behavior:
+Pass any raw CLI flags as a string. See [oxlint CLI options](https://oxc-project.github.io/docs/guide/usage/linter.html#useful-options).
 
 ```javascript
-import oxlintPlugin from 'vite-plugin-oxlint'
-
-export default {
-  plugins: [
-    oxlintPlugin({
-      failOnError: true
-    })
-  ]
-}
-```
-
-To also fail on warnings:
-
-```javascript
-import oxlintPlugin from 'vite-plugin-oxlint'
-
-export default {
-  plugins: [
-    oxlintPlugin({
-      failOnError: true,
-      failOnWarning: true
-    })
-  ]
-}
-```
-
-### Disable lint on build start
-
-By default, oxlint runs when the build starts. You can disable this to only lint on file changes during development:
-
-```javascript
-import oxlintPlugin from 'vite-plugin-oxlint'
-
-export default {
-  plugins: [
-    oxlintPlugin({
-      lintOnStart: false
-    })
-  ]
-}
-```
-
-### Additional oxlint config:
-
-You can pass any additional oxlint config as a string.
-See [oxlint options](https://oxc-project.github.io/docs/guide/usage/linter.html#useful-options) for a list of available options.
-
-Example: add the `--deny-warnings` and `--quiet` options to the `vite-plugin-oxlint` config:
-
-```javascript
-import oxlintPlugin from 'vite-plugin-oxlint'
-
-export default {
-  plugins: [
-    oxlintPlugin({
-      params: '--deny-warnings --quiet'
-    })
-  ]
-}
+{ params: '--deny-warnings --quiet' }
 ```
 
 ## Integration with ESLint
 
-If your project still needs ESLint, you can use [vite-plugin-eslint](https://github.com/gxmari007/vite-plugin-eslint) and configure ESLint with [eslint-plugin-oxlint](https://github.com/oxc-project/eslint-plugin-oxlint) to turn off rules already supported by oxlint.
+If your project still needs ESLint, use [vite-plugin-eslint](https://github.com/gxmari007/vite-plugin-eslint) alongside this plugin, and configure ESLint with [eslint-plugin-oxlint](https://github.com/oxc-project/eslint-plugin-oxlint) to disable rules already covered by oxlint.
 
 ```javascript
 import oxlintPlugin from 'vite-plugin-oxlint'
