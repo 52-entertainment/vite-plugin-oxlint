@@ -1,6 +1,6 @@
 export interface Options {
   path?: string
-  ignorePattern?: string
+  ignorePattern?: string | string[]
   configFile?: string
   deny?: string[]
   allow?: string[]
@@ -17,4 +17,8 @@ export interface Options {
     | 'stylish'
     | 'unix'
   quiet?: boolean
+  fix?: boolean
+  failOnError?: boolean
+  failOnWarning?: boolean
+  lintOnStart?: boolean
 }

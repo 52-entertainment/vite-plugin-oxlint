@@ -25,7 +25,7 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
   const executeCommand = async () => {
     const {
       path = '',
-      ignorePattern = '',
+      ignorePattern,
       configFile = 'oxlintrc.json',
       deny = [],
       allow = [],
@@ -33,19 +33,35 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
       params = '',
       oxlintPath = '',
       format = '',
-      quiet = false
+      quiet = false,
+      fix = false,
+      failOnError = false,
+      failOnWarning = false
     } = options
+
+    const shouldFail = failOnError || failOnWarning
 
     const args: string[] = []
     if (quiet) {
       args.push('--quiet')
     }
+    if (fix) {
+      args.push('--fix')
+    }
     if (format) {
       args.push('--format', format)
     }
-    if (ignorePattern) {
-      args.push(`--ignore-pattern=${ignorePattern}`)
+    if (failOnWarning) {
+      args.push('--deny-warnings')
     }
+
+    const patterns = Array.isArray(ignorePattern)
+      ? ignorePattern
+      : ignorePattern
+        ? [ignorePattern]
+        : []
+    patterns.forEach(pattern => args.push(`--ignore-pattern=${pattern}`))
+
     deny.forEach(d => args.push('-D', d))
     allow.forEach(a => args.push('-A', a))
     warn.forEach(w => args.push('-W', w))
@@ -66,16 +82,27 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
 
     return new Promise<void>((resolve, reject) => {
       const executeWithFallback = (useExecuteLocal: boolean) => {
-        const {
-          command: cmd,
-          args: cmdArgs
-        }: { command: string; args: string[] } = oxlintPath
+        const resolved = oxlintPath
           ? { command: resolveAbsolutePath(oxlintPath), args }
           : resolveCommand(
               pm.agent,
               useExecuteLocal ? 'execute-local' : 'execute',
               ['oxlint', ...args]
-            )!
+            )
+
+        if (!resolved) {
+          if (useExecuteLocal && !oxlintPath) {
+            executeWithFallback(false)
+            return
+          }
+          reject(
+            new Error(`Could not resolve oxlint command for ${pm.agent}`)
+          )
+          return
+        }
+
+        const { command: cmd, args: cmdArgs } = resolved
+        const bufferedOutput: string[] = []
 
         const child = spawn(cmd, cmdArgs, {
           cwd,
@@ -88,14 +115,11 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
         })
 
         child.stdout?.on('data', data => {
-          const dataString = data.toString()
-
-          if (
-            !dataString.includes('undefined') &&
-            !(dataString.includes('not found') && useExecuteLocal)
-          ) {
-            const trimmed = dataString.trimEnd()
-            if (trimmed) {
+          const trimmed = data.toString().trimEnd()
+          if (trimmed) {
+            if (useExecuteLocal && !oxlintPath) {
+              bufferedOutput.push(trimmed)
+            } else {
               logger?.info(trimmed)
             }
           }
@@ -104,23 +128,44 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
         child.stderr?.on('data', data => {
           const trimmed = data.toString().trimEnd()
           if (trimmed) {
-            logger?.error(trimmed)
+            if (useExecuteLocal && !oxlintPath) {
+              bufferedOutput.push(trimmed)
+            } else {
+              logger?.error(trimmed)
+            }
           }
         })
 
         child.on('error', error => {
-          logger?.error(`oxlint Error: ${error.message}`)
-          reject(error)
+          if (useExecuteLocal && !oxlintPath) {
+            executeWithFallback(false)
+          } else {
+            logger?.error(`oxlint Error: ${error.message}`)
+            reject(error)
+          }
         })
 
         child.on('exit', code => {
+          const flushBuffer = () => {
+            bufferedOutput.forEach(line => logger?.info(line))
+          }
+
           if (code === 0) {
+            if (useExecuteLocal && !oxlintPath) flushBuffer()
             logger?.info('Oxlint successfully finished.')
             resolve()
-          } else if (!oxlintPath && useExecuteLocal && code !== 1) {
+          } else if (code === 1) {
+            if (useExecuteLocal && !oxlintPath) flushBuffer()
+            if (shouldFail) {
+              reject(new Error('Oxlint found lint errors.'))
+            } else {
+              logger?.warn('Oxlint found lint errors.')
+              resolve()
+            }
+          } else if (useExecuteLocal && !oxlintPath) {
             executeWithFallback(false)
           } else {
-            logger?.warn(`Oxlint finished with exit code: ${code}`)
+            logger?.error(`Oxlint exited with unexpected code: ${code}`)
             resolve()
           }
         })
@@ -130,11 +175,19 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
     })
   }
 
-  const handleCommandExecution = async () => {
+  const runOxlint = async () => {
+    try {
+      await executeCommand()
+    } catch (error) {
+      logger?.error(`Error executing command: ${error}`)
+      throw error
+    }
+  }
+
+  const debouncedRun = () => {
     if (timeoutId) {
       clearTimeout(timeoutId)
     }
-
     timeoutId = setTimeout(async () => {
       try {
         await executeCommand()
@@ -150,10 +203,13 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
       logger = config.logger
     },
     async buildStart() {
-      await handleCommandExecution()
+      const { lintOnStart = true } = options
+      if (lintOnStart) {
+        await runOxlint()
+      }
     },
     async handleHotUpdate() {
-      await handleCommandExecution()
+      debouncedRun()
     }
   }
 }
