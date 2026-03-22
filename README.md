@@ -3,7 +3,7 @@
 
 # ⚓️+⚡️Vite Plugin Oxlint
 
-A Vite plugin for integrating the [Oxlint](https://oxc-project.github.io) linter into your Vite project.
+A Vite plugin for integrating the [Oxlint linter](https://oxc.rs/docs/guide/usage/linter) into your [Vite](https://vite.dev) project.
 
 ## Table of Contents
 
