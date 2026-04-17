@@ -95,9 +95,7 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
             executeWithFallback(false)
             return
           }
-          reject(
-            new Error(`Could not resolve oxlint command for ${pm.agent}`)
-          )
+          reject(new Error(`Could not resolve oxlint command for ${pm.agent}`))
           return
         }
 

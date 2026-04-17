@@ -39,8 +39,6 @@ describe('oxlintPlugin', () => {
   })
 
   it('should accept a single ignorePattern string', () => {
-    expect(() =>
-      oxlintPlugin({ ignorePattern: '*.test.js' })
-    ).not.toThrow()
+    expect(() => oxlintPlugin({ ignorePattern: '*.test.js' })).not.toThrow()
   })
 })
