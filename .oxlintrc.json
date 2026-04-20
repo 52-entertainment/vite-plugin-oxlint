@@ -1,0 +1,66 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc",
+    "import",
+    "node",
+    "vitest",
+    "promise"
+  ],
+  "env": {
+    "node": true,
+    "es2024": true
+  },
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn",
+    "pedantic": "warn",
+    "style": "warn",
+    "restriction": "warn",
+    "nursery": "warn"
+  },
+  "ignorePatterns": ["dist", "node_modules"],
+  "rules": {
+    // -- pedantic
+    "eslint/max-lines-per-function": "off",
+
+    // -- style
+    "eslint/id-length": "off",
+    "eslint/max-statements": "off",
+    "eslint/no-magic-numbers": "off",
+    "eslint/no-nested-ternary": "off",
+    "eslint/no-ternary": "off",
+    "import/no-named-export": "off",
+    "import/no-nodejs-modules": "off",
+    "promise/avoid-new": "off",
+    "unicorn/no-nested-ternary": "off",
+    "eslint/prefer-destructuring": [
+      "warn",
+      { "AssignmentExpression": { "object": false, "array": false } }
+    ],
+    "eslint/sort-imports": ["warn", { "ignoreDeclarationSort": true }],
+
+    // -- restriction
+    "eslint/no-undefined": "off",
+    "import/no-default-export": "off",
+    "node/no-process-env": "off",
+    "oxc/no-async-await": "off",
+    "oxc/no-optional-chaining": "off",
+    "oxc/no-rest-spread-properties": "off",
+    "typescript/explicit-function-return-type": "off",
+    "unicorn/no-array-for-each": "off"
+  },
+  "overrides": [
+    {
+      "files": ["src/__tests__/**"],
+      "rules": {
+        "vitest/no-importing-vitest-globals": "off",
+        "vitest/prefer-describe-function-title": "off",
+        "import/no-relative-parent-imports": "off"
+      }
+    }
+  ]
+}
