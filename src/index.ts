@@ -238,7 +238,10 @@ const oxlintPlugin = (options: Options = {}): Plugin => {
       logger = config.logger
     },
     handleHotUpdate() {
-      debouncedRun()
+      const { lintOnHotUpdate = true } = options
+      if (lintOnHotUpdate) {
+        debouncedRun()
+      }
     },
     name: 'vite-plugin-oxlint'
   }

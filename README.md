@@ -54,6 +54,7 @@ export default {
 | `failOnError`   | `boolean`            | `false`         | Fail the build on lint errors                                                                   |
 | `failOnWarning` | `boolean`            | `false`         | Fail the build on lint warnings                                                                 |
 | `lintOnStart`   | `boolean`            | `true`          | Run oxlint when the build starts                                                                |
+| `lintOnHotUpdate` | `boolean`          | `true`          | Run oxlint on every HMR update during dev                                                       |
 | `params`        | `string`             | —               | Additional raw CLI flags passed to oxlint                                                       |
 
 ## Advanced Usage
@@ -168,6 +169,11 @@ By default, lint issues are logged but don't fail the build.
 // Disable linting at build start (only lint on file changes during dev)
 {
   lintOnStart: false
+}
+
+// Disable linting on HMR updates (only lint once at start — useful in `vite build`-only workflows)
+{
+  lintOnHotUpdate: false
 }
 ```
 

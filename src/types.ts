@@ -21,4 +21,5 @@ export interface Options {
   failOnError?: boolean
   failOnWarning?: boolean
   lintOnStart?: boolean
+  lintOnHotUpdate?: boolean
 }

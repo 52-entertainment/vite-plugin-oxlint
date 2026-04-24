@@ -30,6 +30,7 @@ describe('oxlintPlugin', () => {
         format: 'github',
         ignorePattern: ['*.test.js', 'dist/**'],
         lintOnStart: false,
+        lintOnHotUpdate: false,
         params: '--threads 4',
         path: './src',
         quiet: true,
