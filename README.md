@@ -166,12 +166,12 @@ By default, lint issues are logged but don't fail the build.
   failOnWarning: true
 }
 
-// Disable linting at build start (only lint on file changes during dev)
+// Disable linting at build start
 {
   lintOnStart: false
 }
 
-// Disable linting on HMR updates (only lint once at start — useful in `vite build`-only workflows)
+// Disable linting on HMR updates
 {
   lintOnHotUpdate: false
 }
