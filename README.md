@@ -39,23 +39,23 @@ export default {
 
 ## Options
 
-| Option          | Type                 | Default         | Description                                                                                     |
-| --------------- | -------------------- | --------------- | ----------------------------------------------------------------------------------------------- |
-| `configFile`    | `string`             | `oxlintrc.json` | Path to the oxlint config file                                                                  |
-| `path`          | `string`             | `.`             | Directory where oxlint runs                                                                     |
-| `ignorePattern` | `string \| string[]` | —               | Glob patterns of files to ignore                                                                |
-| `allow`         | `string[]`           | —               | Rules/categories to allow (turn off)                                                            |
-| `deny`          | `string[]`           | —               | Rules/categories to deny (turn on)                                                              |
-| `warn`          | `string[]`           | —               | Rules/categories to warn                                                                        |
-| `oxlintPath`    | `string`             | —               | Path to the oxlint binary (useful in monorepos)                                                 |
-| `format`        | `string`             | `default`       | Output format (`default`, `checkstyle`, `github`, `gitlab`, `json`, `junit`, `stylish`, `unix`) |
-| `quiet`         | `boolean`            | `false`         | Suppress warnings, only report errors                                                           |
-| `fix`           | `boolean`            | `false`         | Enable auto-fixing                                                                              |
-| `failOnError`   | `boolean`            | `false`         | Fail the build on lint errors                                                                   |
-| `failOnWarning` | `boolean`            | `false`         | Fail the build on lint warnings                                                                 |
-| `lintOnStart`   | `boolean`            | `true`          | Run oxlint when the build starts                                                                |
-| `lintOnHotUpdate` | `boolean`          | `true`          | Run oxlint on every HMR update during dev                                                       |
-| `params`        | `string`             | —               | Additional raw CLI flags passed to oxlint                                                       |
+| Option            | Type                 | Default   | Description                                                                                                       |
+| ----------------- | -------------------- | --------- | ----------------------------------------------------------------------------------------------------------------- |
+| `configFile`      | `string`             | —         | Path to a custom oxlint config file (see [Configuration file](#configuration-file))                               |
+| `path`            | `string`             | `.`       | Directory where oxlint runs                                                                                       |
+| `ignorePattern`   | `string \| string[]` | —         | Glob patterns of files to ignore                                                                                  |
+| `allow`           | `string[]`           | —         | Rules/categories to allow (turn off)                                                                              |
+| `deny`            | `string[]`           | —         | Rules/categories to deny (turn on)                                                                                |
+| `warn`            | `string[]`           | —         | Rules/categories to warn                                                                                          |
+| `oxlintPath`      | `string`             | —         | Path to the oxlint binary (useful in monorepos)                                                                   |
+| `format`          | `string`             | `default` | Output format (`default`, `agent`, `checkstyle`, `github`, `gitlab`, `json`, `junit`, `sarif`, `stylish`, `unix`) |
+| `quiet`           | `boolean`            | `false`   | Suppress warnings, only report errors                                                                             |
+| `fix`             | `boolean`            | `false`   | Enable auto-fixing                                                                                                |
+| `failOnError`     | `boolean`            | `false`   | Fail the build on lint errors                                                                                     |
+| `failOnWarning`   | `boolean`            | `false`   | Fail the build on lint warnings                                                                                   |
+| `lintOnStart`     | `boolean`            | `true`    | Run oxlint when the build starts                                                                                  |
+| `lintOnHotUpdate` | `boolean`            | `true`    | Run oxlint on every HMR update during dev                                                                         |
+| `params`          | `string`             | —         | Additional raw CLI flags passed to oxlint                                                                         |
 
 ## Advanced Usage
 
@@ -65,18 +65,13 @@ All examples below assume the following setup:
 import oxlintPlugin from 'vite-plugin-oxlint'
 
 export default {
-  plugins: [
-    oxlintPlugin({
-      /* options here */
-    })
-  ]
+  plugins: [oxlintPlugin({/* options here */})]
 }
 ```
 
 ### Configuration file
 
-Use a custom [oxlint config file](https://oxc.rs/docs/guide/usage/linter/config.html). Default is `oxlintrc.json`.
-Note: `allow`, `deny`, and `warn` options override config file rules.
+Oxlint discovers its own [config files](https://oxc.rs/docs/guide/usage/linter/config.html) (`.oxlintrc.json`, `.oxlintrc.jsonc`, `oxlint.config.ts`) automatically, including nested configs — no option needed. Use `configFile` only for a custom name or location (a legacy `oxlintrc.json` at the project root is also picked up). Note: an explicit config file disables nested config discovery, and `allow`/`deny`/`warn` options override its rules.
 
 ```javascript
 {
@@ -138,7 +133,7 @@ Without this option, the plugin falls back to `npx` (or your package manager's e
 ### Output format
 
 Change how lint diagnostics are reported. See [oxlint output formats](https://oxc.rs/docs/guide/usage/linter/output-formats.html).
-Available: `default`, `checkstyle`, `github`, `gitlab`, `json`, `junit`, `stylish`, `unix`.
+Available: `default`, `agent`, `checkstyle`, `github`, `gitlab`, `json`, `junit`, `sarif`, `stylish`, `unix`.
 
 ```javascript
 {

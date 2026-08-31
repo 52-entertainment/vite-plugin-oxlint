@@ -1,66 +1,11 @@
 import type { Logger, Plugin } from 'vite'
 import { spawn } from 'cross-spawn'
-import nodePath from 'node:path'
-import { existsSync } from 'node:fs'
 import type { Options } from './types'
+import { buildArgs, resolveAbsolutePath } from './args'
 import { detect } from 'package-manager-detector/detect'
 import { resolveCommand } from 'package-manager-detector/commands'
 
 const DEBOUNCE_MS = 300
-
-const resolveAbsolutePath = (p: string): string =>
-  nodePath.isAbsolute(p) ? p : nodePath.join(process.cwd(), p)
-
-const buildArgs = (options: Options): string[] => {
-  const {
-    ignorePattern,
-    configFile = 'oxlintrc.json',
-    deny = [],
-    allow = [],
-    warn = [],
-    params = '',
-    format = '',
-    quiet = false,
-    fix = false,
-    failOnWarning = false
-  } = options
-
-  const args: string[] = []
-  if (quiet) {
-    args.push('--quiet')
-  }
-  if (fix) {
-    args.push('--fix')
-  }
-  if (format) {
-    args.push('--format', format)
-  }
-  if (failOnWarning) {
-    args.push('--deny-warnings')
-  }
-
-  const patterns = Array.isArray(ignorePattern)
-    ? ignorePattern
-    : ignorePattern
-      ? [ignorePattern]
-      : []
-  patterns.forEach(pattern => args.push(`--ignore-pattern=${pattern}`))
-
-  deny.forEach(d => args.push('-D', d))
-  allow.forEach(a => args.push('-A', a))
-  warn.forEach(w => args.push('-W', w))
-
-  const configFilePath = resolveAbsolutePath(configFile)
-  if (existsSync(configFilePath)) {
-    args.push('-c', configFilePath)
-  }
-
-  if (params) {
-    args.push(...params.split(' ').filter(Boolean))
-  }
-
-  return args
-}
 
 interface RunChildParams {
   cmd: string
@@ -153,7 +98,7 @@ const runOxlintOnce = async (
     failOnWarning = false
   } = options
   const shouldFail = failOnError || failOnWarning
-  const args = buildArgs(options)
+  const args = buildArgs(options, logger)
   const cwd = resolveAbsolutePath(path)
 
   const pm = await pmPromise
