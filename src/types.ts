@@ -9,11 +9,13 @@ export interface Options {
   oxlintPath?: string
   format?:
     | 'default'
+    | 'agent'
     | 'checkstyle'
     | 'github'
     | 'gitlab'
     | 'json'
     | 'junit'
+    | 'sarif'
     | 'stylish'
     | 'unix'
   quiet?: boolean
