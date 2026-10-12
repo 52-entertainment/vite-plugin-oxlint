@@ -47,6 +47,8 @@ const runChild = ({
       }
     }
 
+    const flush = () => bufferedOutput.forEach(line => logger?.info(line))
+
     child.stdout?.on('data', d => emit(d, s => logger?.info(s)))
     child.stderr?.on('data', d => emit(d, s => logger?.error(s)))
 
@@ -60,7 +62,6 @@ const runChild = ({
     })
 
     child.on('exit', code => {
-      const flush = () => bufferedOutput.forEach(line => logger?.info(line))
       if (code === 0) {
         if (buffered) {
           flush()
