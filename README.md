@@ -79,6 +79,8 @@ Oxlint discovers its own [config files](https://oxc.rs/docs/guide/usage/linter/c
 }
 ```
 
+Under [Vite+](https://viteplus.dev) (`vp dev` / `vp build`), oxlint behaves like `vp lint`: it reads the `lint` block of `vite.config.*` and ignores `.oxlintrc.json` files — without a `lint` block, oxlint silently falls back to its default rules. Set `configFile` to keep using a separate config file.
+
 ### Working directory
 
 Restrict linting to a subdirectory. Default is the project root.
