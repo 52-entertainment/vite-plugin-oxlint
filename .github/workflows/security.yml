@@ -7,41 +7,161 @@ on:
       - main
       - master
 
+permissions:
+  contents: read
+
 jobs:
   semgrep:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      version: 1.3.2
+      version: 1.4.1
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # required to have full history and compare commits
 
-      - name: Run security audit (semgrep)
-        env:
-          SECURITY_SLACK_WEBHOOK_URL: ${{ secrets.SECURITY_SLACK_WEBHOOK_URL }}
-          SECURITY_SLACK_CHANNEL: ${{ secrets.SECURITY_SLACK_CHANNEL }}
-          URL: ${{ github.event.pull_request.html_url || format('{0}/{1}/commit/{2}', github.server_url, github.repository, github.sha) }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_REF: ${{ github.ref }}
-          GITHUB_HEAD_REF: ${{ github.head_ref }}
+      - name: Set up uv
+        # uv brings its own Python build, so this also works on self-hosted runners without Python 3.10+ (Amazon Linux)
+        uses: astral-sh/setup-uv@v10.3.2 # no floating major tag from v8 on
 
+      - name: Install semgrep
+        env:
+          UV_TOOL_BIN_DIR: ${{ runner.temp }}/uv-bin
         run: |
           echo "Github Action version: $version"
-          echo "SECURITY_SLACK_WEBHOOK_URL=${SECURITY_SLACK_WEBHOOK_URL}" > /tmp/config.env
-          echo "SECURITY_SLACK_CHANNEL=${SECURITY_SLACK_CHANNEL}" >> /tmp/config.env
-          echo "URL=${URL}" >> /tmp/config.env
-          echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY}" >> /tmp/config.env
-          echo "GITHUB_REF=${GITHUB_REF}" >> /tmp/config.env
-          echo "GITHUB_HEAD_REF=${GITHUB_HEAD_REF}" >> /tmp/config.env
+          uv tool install --python 3.13 semgrep
+          echo "$UV_TOOL_BIN_DIR" >> "$GITHUB_PATH"
+          "$UV_TOOL_BIN_DIR/semgrep" --version
 
-          docker pull public.ecr.aws/m5g2x0g1/security/semgrep-analysis:latest >/dev/null 2>&1
+      - name: Detect modified files
+        shell: bash
+        env:
+          FILE_LIST: ${{ runner.temp }}/filename.txt
+        run: |
+          # Compare with the previous commit. On a pull_request event HEAD is the
+          # merge commit, so HEAD~1 is the base branch and the diff covers the whole PR.
+          # On a repository with a single commit, fall back to the empty tree (all files).
+          BASE_SHA=$(git rev-parse --verify -q HEAD~1 || git hash-object -t tree /dev/null)
+          echo "Comparing with base commit: $BASE_SHA"
 
-          docker run --rm \
-            -v $PWD:/app \
-            --env-file=/tmp/config.env \
-            --user $(id -u):$(id -g) \
-            public.ecr.aws/m5g2x0g1/security/semgrep-analysis:latest
+          : > "$FILE_LIST"
+          while IFS= read -r filename; do
+            ignore=false
+            if [ -f .semgrepignore ]; then
+              while IFS= read -r pattern; do
+                pattern="${pattern%/}"
+                if [ -z "$pattern" ] || [[ "$pattern" == \#* ]]; then
+                  continue
+                fi
+                if [[ "$filename" == "$pattern"* ]]; then
+                  ignore=true
+                  break
+                fi
+              done < .semgrepignore
+            fi
+            if { [ -f "$filename" ] || [ -d "$filename" ]; } && [ "$ignore" = false ]; then
+              echo "$filename" >> "$FILE_LIST"
+            fi
+          done < <(git diff --name-only "$BASE_SHA")
+
+          echo "Modified files:"
+          cat "$FILE_LIST"
+
+      - name: Run semgrep
+        shell: bash
+        env:
+          FILE_LIST: ${{ runner.temp }}/filename.txt
+          VULN_OUTPUT: ${{ runner.temp }}/vuln-output.json
+        run: |
+          if [ ! -s "$FILE_LIST" ]; then
+            echo "No modified files detected."
+            exit 0
+          fi
+
+          files=()
+          while IFS= read -r f; do files+=("$f"); done < "$FILE_LIST"
+          echo "Running semgrep on ${#files[@]} file(s)..."
+          semgrep scan --config "p/secrets" --config "p/owasp-top-ten" \
+            --metrics=off \
+            --experimental \
+            --severity=WARNING --severity=ERROR \
+            --exclude-rule=yaml.kubernetes.security.allow-privilege-escalation-no-securitycontext.allow-privilege-escalation-no-securitycontext \
+            --exclude-rule=dockerfile.security.missing-user-entrypoint.missing-user-entrypoint \
+            --exclude-rule=dockerfile.security.missing-user.missing-user \
+            --exclude-rule=yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag \
+            --json "${files[@]}" > "$VULN_OUTPUT"
+          echo "done"
+
+      - name: Send Slack alerts
+        shell: bash
+        env:
+          VULN_OUTPUT: ${{ runner.temp }}/vuln-output.json
+          SECURITY_SLACK_WEBHOOK_URL: ${{ secrets.SECURITY_SLACK_WEBHOOK_URL }}
+          SECURITY_SLACK_CHANNEL: ${{ secrets.SECURITY_SLACK_CHANNEL }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+        run: |
+          if [ ! -s "$VULN_OUTPUT" ]; then
+            echo "No Semgrep output file found. No alerts sent."
+            exit 0
+          fi
+
+          # For pull_request events link to the PR, otherwise link to the pushed commit.
+          if [ -n "$PR_URL" ]; then
+            URL="$PR_URL"
+            link_name="pull-request"
+          else
+            branch="${GITHUB_REF#refs/heads/}"
+            URL="$COMMIT_URL"
+            link_name="'${branch}' branch"
+          fi
+
+          send_slack() {
+            if [ -z "$SECURITY_SLACK_WEBHOOK_URL" ]; then
+              echo "::warning::SECURITY_SLACK_WEBHOOK_URL is not set, skipping Slack notification"
+              return 0
+            fi
+            jq -n \
+              --arg channel "$SECURITY_SLACK_CHANNEL" \
+              --arg username "SAST v$version" \
+              --arg text "$1" \
+              '{channel: $channel, username: $username, icon_emoji: "git", text: $text}' \
+              | curl -sS -X POST -H 'Content-type: application/json' --data @- "$SECURITY_SLACK_WEBHOOK_URL"
+            echo
+          }
+
+          VULN_COUNT=$(jq '.results | length' "$VULN_OUTPUT")
+          echo "Vulnerabilities found: $VULN_COUNT"
+
+          if [ "$VULN_COUNT" -eq 0 ] && [[ "$SECURITY_SLACK_CHANNEL" == *"test"* ]]; then
+            slack_message=$(printf '*Repository:* <%s|%s> _%s_\n*Description:* No vulnerability found!' \
+              "$URL" "$GITHUB_REPOSITORY" "$link_name")
+            send_slack "$slack_message"
+          fi
+
+          jq -c '.results[]' "$VULN_OUTPUT" | while IFS= read -r result; do
+            file=$(jq -r '.path' <<< "$result")
+            vuln_id=$(jq -r '.check_id' <<< "$result")
+            message=$(jq -r '.extra.message' <<< "$result")
+            details=$(jq -r '.extra.metadata.shortlink // ""' <<< "$result")
+            severity=$(jq -r '.extra.severity' <<< "$result")
+            line_start=$(jq -r '.start.line' <<< "$result")
+            line_end=$(jq -r '.end.line' <<< "$result")
+            code_snippet=$(sed -n "${line_start},${line_end}p" "$file")
+
+            emoji=":warning:"
+            if [ "$severity" = "ERROR" ]; then emoji=":small_red_triangle:"; fi
+
+            level=$(tr "[:upper:]" "[:lower:]" <<< "$severity")
+            echo "::${level}::Semgrep Vulnerability in file '${file}' (line ${line_start} to ${line_end}) : ${vuln_id}"
+
+            slack_message=$(printf '*Repository:* <%s|%s> _%s_\n*File:* `%s` (line %s to %s)\n*Vulnerability:* %s %s\n*Message:* %s %s\n*Code Snippet:*\n```%s```' \
+              "$URL" "$GITHUB_REPOSITORY" "$link_name" "$file" "$line_start" "$line_end" \
+              "$vuln_id" "$emoji" "$message" "$details" "$code_snippet")
+
+            echo "Sending Slack alert for file: ${file}"
+            send_slack "$slack_message"
+          done
